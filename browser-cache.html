@@ -26,6 +26,7 @@ Example:
       <iron-ajax
        auto
        url="{{source}}"
+       headers="{{requestHeaders}}"
        loading="{{_reqLoading}}"
        on-response="_handleResponse"
       ></iron-ajax>
@@ -102,6 +103,13 @@ Example:
         source: {
           type: String,
           value: null
+        },
+
+        requestHeaders: {
+          type: Object,
+          value: function() {
+            return {};
+          }
         },
 
         /**

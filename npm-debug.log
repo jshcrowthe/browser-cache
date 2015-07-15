@@ -1,0 +1,20 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Users/jshcrowthe/.nvm/v0.10.35/bin/node',
+1 verbose cli   '/Users/jshcrowthe/.nvm/v0.10.35/bin/npm',
+1 verbose cli   'link' ]
+2 info using npm@1.4.28
+3 info using node@v0.10.35
+4 verbose linkPkg /Users/jshcrowthe/Projects/browser-cache
+5 error Error: ENOENT, open '/Users/jshcrowthe/Projects/browser-cache/package.json'
+6 error If you need help, you may report this *entire* log,
+6 error including the npm and node versions, at:
+6 error     <http://github.com/npm/npm/issues>
+7 error System Darwin 14.4.0
+8 error command "/Users/jshcrowthe/.nvm/v0.10.35/bin/node" "/Users/jshcrowthe/.nvm/v0.10.35/bin/npm" "link"
+9 error cwd /Users/jshcrowthe/Projects/browser-cache
+10 error node -v v0.10.35
+11 error npm -v 1.4.28
+12 error path /Users/jshcrowthe/Projects/browser-cache/package.json
+13 error code ENOENT
+14 error errno 34
+15 verbose exit [ 34, true ]
