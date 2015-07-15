@@ -1,0 +1,33 @@
+{
+  "name": "browser-cache",
+  "version": "1.0.0",
+  "authors": [
+    "Josh Crowther <jshcrowthe@gmail.com>"
+  ],
+  "description": "`<browser-cache>` Provides a simple interface to the different browser storage methodologies (`IndexedDB` (`WebSQL`), `sessionStorage`, `localStorage`)",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "caching",
+    "IndexedDB",
+    "WebSQL",
+    "sessionStorage",
+    "localStorage",
+    "PouchDB"
+  ],
+  "main": "browser-cache.html",
+  "homepage": "https://github.com/jshcrowthe/browser-cache/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "iron-ajax": "PolymerElements/iron-ajax#~1.0.2",
+    "pouchdb": "~3.6.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  }
+}

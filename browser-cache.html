@@ -1,0 +1,244 @@
+<script src="../pouchdb/dist/pouchdb.min.js"></script>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<!--
+`<browser-cache>` Provides a simple interface to the different browser storage methodologies (`IndexedDB` (`WebSQL`), `sessionStorage`, `localStorage`)
+
+Example:
+
+    <browser-cache key="myData" data="{{data}}"></browser-cache>
+
+@element browser-cache
+@demo demo/index.html
+-->
+<dom-module id="browser-cache">
+  <template>
+    <template is="dom-if" if="{{source}}">
+      <iron-ajax
+       auto
+       url="{{source}}"
+       loading="{{_reqLoading}}"
+       on-response="_handleResponse"
+      ></iron-ajax>
+    </template>
+  </template>
+</dom-module>
+
+<script>
+  (function() {
+    var objectEquals = function( x, y ) {
+      if ( x === y ) return true;
+      if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) return false;
+      if ( x.constructor !== y.constructor ) return false;
+      for ( var p in x ) {
+        if ( ! x.hasOwnProperty( p ) ) continue;
+        if ( ! y.hasOwnProperty( p ) ) return false;
+        if ( x[ p ] === y[ p ] ) continue;
+        if ( typeof( x[ p ] ) !== "object" ) return false;
+        if ( ! objectEquals( x[ p ],  y[ p ] ) ) return false;
+      }
+      for ( p in y ) {
+        if ( y.hasOwnProperty( p ) && ! x.hasOwnProperty( p ) ) return false;
+      }
+      return true;
+    };
+    Polymer({
+
+      is: 'browser-cache',
+
+      properties: {
+        
+        /**
+         * The `database` property defines the name of the database/namespace that will be used
+         * for the data cache (Potentially allowing for more than one cache on the same machine).
+         * @type {String}
+         */
+        database: {
+          type: String,
+          value: 'browser-cache'
+        },
+        
+        /**
+         * The `key` property is the key that will be fetched from the cache
+         * @type {String}
+         */
+        key: {
+          type: String,
+          value: null
+        },
+        
+        /**
+         * The `type` attribute can be provided if one desires to use `sessionStorage` or `localStorage`
+         * rather than using the default `indexedDB`/`webSQL` storage. Valid values are `session` and `local`
+         * @type {String}
+         */
+        type: {
+          type: String,
+          value: null
+        },
+        
+        /**
+         * If provided the `source` attribute will define a source of data (second to the cache)
+         * that will be requested and returned should a cache value not exist. _NOTE: The return value
+         * of this call will be cached immediately and an event will be fired when data in the cache and
+         * data from the response differ_
+         * @type {Object}
+         */
+        source: {
+          type: String,
+          value: null
+        },
+
+        /**
+         * READ ONLY VALUES
+         */
+        
+        /**
+         * Represents the loading state of the data
+         */
+        loading: {
+          type: Boolean,
+          notify: true,
+          readOnly: true,
+          computed: '_computeLoading(data, _reqLoading)'
+        },
+      
+
+        /**
+         * Will be set to the value of the cached data (if it exists)
+         */
+        data: {
+          type: Object,
+          value: null,
+          notify: true,
+          readOnly: true
+        },
+
+        /**
+         * Will be set to the value of the uncached data (if succesful)
+         */
+        responseData: {
+          type: Object,
+          value: null,
+          notify: true,
+          readOnly: true
+        },
+
+
+        /**
+         * Will be set to true if the data comes from the cache
+         */
+        isCachedData: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          readOnly: true
+        }
+      },
+      ready: function() {
+        if (!this.key) return console.error('ERROR: <browser-cache>: Attribute "key" is required');
+        this._fetchCache(this.key);
+      },
+      _computeLoading: function(data, loading) {
+        return data ? false : loading;
+      },
+      _fetchCache: function(key) {
+        if (!this.key) return console.error('ERROR: <browser-cache>: Attribute "key" is required');
+        switch(this.type) {
+          case 'local':
+            if (!window.localStorage) return console.warn('<browser-cache>: localStorage is not supported in the current browser');
+            this._setData(JSON.parse(localStorage.getItem(this.database + '.' + this.key)));
+            this._setIsCachedData(true);
+            break;
+          case 'session':
+            if (!window.sessionStorage) return console.warn('<browser-cache>: sessionStorage is not supported in the current browser');
+            this._setData(JSON.parse(sessionStorage.getItem(this.database + '.' + this.key)));
+            this._setIsCachedData(true);
+            break;
+          default:
+            var db = new PouchDB(this.database);
+            if (!db || !db.get) return console.error('ERROR: <browser-cache>: There was an error initializing PouchDB');
+            var _this = this;
+
+            // Retrieve the Key from the database
+            db.get(this.key).then(function (doc) {
+              _this._setData(doc.data);
+              _this._setIsCachedData(true);
+            }, function(err) {
+              if (err.status === 404) return;
+              return console.error('ERROR: <browser-cache>: There was an error retriving your data from PouchDB', err);
+            })
+            .catch(function (err) {
+              return console.error('ERROR: <browser-cache>: There was an error retriving your data from PouchDB', err);
+            });
+        }
+      },
+      cacheData: function(data) {
+        if (!this.key) return console.error('ERROR: <browser-cache>: Attribute "key" is required');
+        switch(this.type) {
+          case 'local':
+            if (!window.localStorage) return console.warn('<browser-cache>: localStorage is not supported in the current browser');
+            localStorage.setItem(this.database + '.' + this.key, JSON.stringify(data));
+            break;
+          case 'session':
+            if (!window.sessionStorage) return console.warn('<browser-cache>: sessionStorage is not supported in the current browser');
+            sessionStorage.setItem(this.database + '.' + this.key, JSON.stringify(data));
+            break;
+          default:
+            var db = new PouchDB(this.database);
+            if (!db || !db.get) return console.error('ERROR: <browser-cache>: There was an error initializing PouchDB');
+            var _this = this;
+            // Attempt to get an existing item by the specified key
+            db.get(_this.key)
+            .then(function(doc) {
+              // If it exists update it and resolve
+              db.put({
+                data: data
+              }, _this.key, doc._rev);
+            }, function(err) {
+              // If it throws a non-404 error reject
+              if (err.status !== 404) return console.error('ERROR: <browser-cache>: There was an error saving your data to PouchDB', err);
+              // If it throws a 404 error (as in the doc doesn't exist)
+              // insert the new value.
+              db.put({
+                _id: _this.key,
+                data: data
+              });
+            })
+            .catch(function (err) {
+              return console.error('ERROR: <browser-cache>: There was an error saving your data to PouchDB', err);
+            });
+        }
+      },
+      _handleResponse: function(e) {
+        if (!e || !e.detail || !e.detail.response) return;
+        this.cacheData(e.detail.response);
+        this._setResponseData(e.detail.response);
+        if (!this.data) {
+          this._setData(e.detail.response);
+          this.fire('new-data');
+        }
+        if (!objectEquals(this.responseData, this.data)) {
+          this.fire('new-data');
+        }
+      }
+
+      // Element Behavior
+
+      /**
+       * The `new-data` event is fired whenever there is a difference between the cached data and the response body (provided the `source` attribute exists).
+       *
+       * @event new-data
+       */
+    });
+  })();
+</script>
