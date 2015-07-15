@@ -35,6 +35,12 @@ Example:
 
 <script>
   (function() {
+    var buildName = function(db, key) {
+      var name = '';
+      if (db) name += db + '.';
+      name += key;
+      return name;
+    };
     var objectEquals = function( x, y ) {
       if ( x === y ) return true;
       if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) return false;
@@ -64,7 +70,7 @@ Example:
          */
         database: {
           type: String,
-          value: 'browser-cache'
+          value: null
         },
         
         /**
@@ -156,16 +162,24 @@ Example:
         switch(this.type) {
           case 'local':
             if (!window.localStorage) return console.warn('<browser-cache>: localStorage is not supported in the current browser');
-            this._setData(JSON.parse(localStorage.getItem(this.database + '.' + this.key)));
-            this._setIsCachedData(true);
+            try {
+              this._setData(JSON.parse(localStorage.getItem(buildName(this.database, this.key))));
+              this._setIsCachedData(true);
+            } catch(e) {
+              return console.error('ERROR: <browser-cache>: There was an error retriving your data from localStorage', err);
+            }
             break;
           case 'session':
             if (!window.sessionStorage) return console.warn('<browser-cache>: sessionStorage is not supported in the current browser');
-            this._setData(JSON.parse(sessionStorage.getItem(this.database + '.' + this.key)));
-            this._setIsCachedData(true);
+            try {
+              this._setData(JSON.parse(sessionStorage.getItem(buildName(this.database, this.key))));
+              this._setIsCachedData(true);
+            } catch(e) {
+              return console.error('ERROR: <browser-cache>: There was an error retriving your data from sessionStorage', err);
+            }
             break;
           default:
-            var db = new PouchDB(this.database);
+            var db = new PouchDB(this.database || 'browser-cache');
             if (!db || !db.get) return console.error('ERROR: <browser-cache>: There was an error initializing PouchDB');
             var _this = this;
 
@@ -187,14 +201,14 @@ Example:
         switch(this.type) {
           case 'local':
             if (!window.localStorage) return console.warn('<browser-cache>: localStorage is not supported in the current browser');
-            localStorage.setItem(this.database + '.' + this.key, JSON.stringify(data));
+            localStorage.setItem(buildName(this.database, this.key), JSON.stringify(data));
             break;
           case 'session':
             if (!window.sessionStorage) return console.warn('<browser-cache>: sessionStorage is not supported in the current browser');
-            sessionStorage.setItem(this.database + '.' + this.key, JSON.stringify(data));
+            sessionStorage.setItem(buildName(this.database, this.key), JSON.stringify(data));
             break;
           default:
-            var db = new PouchDB(this.database);
+            var db = new PouchDB(this.database || 'browser-cache');
             if (!db || !db.get) return console.error('ERROR: <browser-cache>: There was an error initializing PouchDB');
             var _this = this;
             // Attempt to get an existing item by the specified key
