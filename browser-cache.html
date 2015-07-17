@@ -42,6 +42,100 @@ Example:
       name += key;
       return name;
     };
+
+    /**
+     * This is the SessionStorage Interface for the <browser-cache> component
+     */
+    var SessionInterface = function() {
+      if (!this._setData || !this._setIsCachedData) return console.warn('<browser-cache>: SessionInterface class called out of context');
+      if (!window.sessionStorage) return console.warn('<browser-cache>(SessionInterface): sessionStorage is not supported in the current browser');
+      this._getCache = function() {
+        try {
+          this._setData(JSON.parse(sessionStorage.getItem(buildName(this.database, this.key))));
+          this._setIsCachedData(true);
+        } catch(e) {
+          return console.error('ERROR: <browser-cache>(SessionInterface): There was an error retriving your data from sessionStorage', err);
+        }
+      };
+      this._setCache = function(data) {
+        return (sessionStorage.setItem(buildName(this.database, this.key), JSON.stringify(data)));
+      };
+    };
+
+    /**
+     * This is the LocalStorage Interface for the <browser-cache> component
+     */
+    var LocalInterface = function() {
+      if (!this._setData || !this._setIsCachedData) return console.warn('<browser-cache>: LocalInterface class called out of context');
+      if (!window.localStorage) return console.warn('<browser-cache>: localStorage is not supported in the current browser');
+      this._getCache = function() {
+        try {
+          this._setData(JSON.parse(localStorage.getItem(buildName(this.database, this.key))));
+          this._setIsCachedData(true);
+        } catch(e) {
+          return console.error('ERROR: <browser-cache>(LocalInterface): There was an error retriving your data from localStorage', err);
+        }
+      };
+      this._setCache = function(data) {
+        return (sessionStorage.setItem(buildName(this.database, this.key), JSON.stringify(data)));
+      };
+    };
+
+    /**
+     * This is the PouchDB Interface for the <browser-cache> component
+     */
+    var PouchDBInterface = function() {
+      if (!this._setData || !this._setIsCachedData) return console.warn('<browser-cache>: PouchDBInterface class called out of context');
+      this._getCache = function() {
+        var db = new PouchDB(this.database || 'browser-cache');
+        if (!db || !db.get) return console.error('ERROR: <browser-cache>(PouchDBInterface): There was an error initializing PouchDB');
+        var _this = this;
+
+        // Retrieve the Key from the database
+        db.get(this.key).then(function (doc) {
+          _this._setData(doc.data);
+          _this._setIsCachedData(true);
+        }, function(err) {
+          if (err.status === 404) return;
+          return console.error('ERROR: <browser-cache>(PouchDBInterface): There was an error retriving your data from PouchDB', err);
+        })
+        .catch(function (err) {
+          return console.error('ERROR: <browser-cache>(PouchDBInterface): There was an error retriving your data from PouchDB', err);
+        });
+      };
+      this._setCache = function(data) {
+        var db = new PouchDB(this.database || 'browser-cache');
+        if (!db || !db.get) return console.error('ERROR: <browser-cache>(PouchDBInterface): There was an error initializing PouchDB');
+        var _this = this;
+        // Attempt to get an existing item by the specified key
+        db.get(_this.key)
+        .then(function(doc) {
+          // If it exists update it and resolve
+          db.put({
+            data: data
+          }, _this.key, doc._rev);
+        }, function(err) {
+          // If it throws a non-404 error reject
+          if (err.status !== 404) return console.error('ERROR: <browser-cache>: There was an error saving your data to PouchDB', err);
+          // If it throws a 404 error (as in the doc doesn't exist)
+          // insert the new value.
+          db.put({
+            _id: _this.key,
+            data: data
+          });
+        })
+        .catch(function (err) {
+          return console.error('ERROR: <browser-cache>(PouchDBInterface): There was an error saving your data to PouchDB', err);
+        });
+      };
+    };
+    var InterfaceRouter = function(type) {
+      return {
+        session: SessionInterface,
+        local:   LocalInterface,
+      }[type] || PouchDBInterface;
+    };
+    
     var objectEquals = function( x, y ) {
       if ( x === y ) return true;
       if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) return false;
@@ -61,7 +155,6 @@ Example:
     Polymer({
 
       is: 'browser-cache',
-
       properties: {
         
         /**
@@ -116,15 +209,15 @@ Example:
          * READ ONLY VALUES
          */
         
-        /**
-         * Represents the loading state of the data
-         */
-        loading: {
-          type: Boolean,
-          notify: true,
-          readOnly: true,
-          computed: '_computeLoading(data, _reqLoading)'
-        },
+        // /**
+        //  * Represents the loading state of the data
+        //  */
+        // loading: {
+        //   type: Boolean,
+        //   notify: true,
+        //   readOnly: true,
+        //   computed: '_computeLoading(data, _reqLoading)'
+        // },
       
 
         /**
@@ -160,91 +253,25 @@ Example:
       },
       ready: function() {
         if (!this.key) return console.error('ERROR: <browser-cache>: Attribute "key" is required');
-        this._fetchCache(this.key);
+        console.log('Type:', this.type);
+        // Here we call Function.call to grab the _setCache and _getCache method 
+        // from our storage interfaces above
+        InterfaceRouter(this.type).call(this);
+        this._getCache(this.key);
       },
       _computeLoading: function(data, loading) {
         return data ? false : loading;
       },
-      _fetchCache: function(key) {
+      setCache: function(data) {
         if (!this.key) return console.error('ERROR: <browser-cache>: Attribute "key" is required');
-        switch(this.type) {
-          case 'local':
-            if (!window.localStorage) return console.warn('<browser-cache>: localStorage is not supported in the current browser');
-            try {
-              this._setData(JSON.parse(localStorage.getItem(buildName(this.database, this.key))));
-              this._setIsCachedData(true);
-            } catch(e) {
-              return console.error('ERROR: <browser-cache>: There was an error retriving your data from localStorage', err);
-            }
-            break;
-          case 'session':
-            if (!window.sessionStorage) return console.warn('<browser-cache>: sessionStorage is not supported in the current browser');
-            try {
-              this._setData(JSON.parse(sessionStorage.getItem(buildName(this.database, this.key))));
-              this._setIsCachedData(true);
-            } catch(e) {
-              return console.error('ERROR: <browser-cache>: There was an error retriving your data from sessionStorage', err);
-            }
-            break;
-          default:
-            var db = new PouchDB(this.database || 'browser-cache');
-            if (!db || !db.get) return console.error('ERROR: <browser-cache>: There was an error initializing PouchDB');
-            var _this = this;
-
-            // Retrieve the Key from the database
-            db.get(this.key).then(function (doc) {
-              _this._setData(doc.data);
-              _this._setIsCachedData(true);
-            }, function(err) {
-              if (err.status === 404) return;
-              return console.error('ERROR: <browser-cache>: There was an error retriving your data from PouchDB', err);
-            })
-            .catch(function (err) {
-              return console.error('ERROR: <browser-cache>: There was an error retriving your data from PouchDB', err);
-            });
-        }
-      },
-      cacheData: function(data) {
-        if (!this.key) return console.error('ERROR: <browser-cache>: Attribute "key" is required');
-        switch(this.type) {
-          case 'local':
-            if (!window.localStorage) return console.warn('<browser-cache>: localStorage is not supported in the current browser');
-            localStorage.setItem(buildName(this.database, this.key), JSON.stringify(data));
-            break;
-          case 'session':
-            if (!window.sessionStorage) return console.warn('<browser-cache>: sessionStorage is not supported in the current browser');
-            sessionStorage.setItem(buildName(this.database, this.key), JSON.stringify(data));
-            break;
-          default:
-            var db = new PouchDB(this.database || 'browser-cache');
-            if (!db || !db.get) return console.error('ERROR: <browser-cache>: There was an error initializing PouchDB');
-            var _this = this;
-            // Attempt to get an existing item by the specified key
-            db.get(_this.key)
-            .then(function(doc) {
-              // If it exists update it and resolve
-              db.put({
-                data: data
-              }, _this.key, doc._rev);
-            }, function(err) {
-              // If it throws a non-404 error reject
-              if (err.status !== 404) return console.error('ERROR: <browser-cache>: There was an error saving your data to PouchDB', err);
-              // If it throws a 404 error (as in the doc doesn't exist)
-              // insert the new value.
-              db.put({
-                _id: _this.key,
-                data: data
-              });
-            })
-            .catch(function (err) {
-              return console.error('ERROR: <browser-cache>: There was an error saving your data to PouchDB', err);
-            });
-        }
+        this._setCache(data);
+        this._setData(data);
       },
       _handleResponse: function(e) {
         if (!e || !e.detail || !e.detail.response) return;
-        this.cacheData(e.detail.response);
+        this.setCache(e.detail.response);
         this._setResponseData(e.detail.response);
+        this.fire('source-response');
         if (!this.data) {
           this._setData(e.detail.response);
           this.fire('new-data');
@@ -255,6 +282,13 @@ Example:
       }
 
       // Element Behavior
+
+      /**
+       * The `source-response` event is fired when the `source` attribute is used and there is a response from the 
+       * source url.
+       *
+       * @event source-response
+       */
 
       /**
        * The `new-data` event is fired whenever there is a difference between the cached data and the response body (provided the `source` attribute exists).
