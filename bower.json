@@ -20,7 +20,8 @@
   "ignore": [
     "/.*",
     "/test/",
-    "/package.json"
+    "/package.json",
+    "/wct.conf.js"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",
