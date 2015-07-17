@@ -24,7 +24,8 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",
     "iron-ajax": "PolymerElements/iron-ajax#~1.0.2",
-    "pouchdb": "~3.6.0"
+    "pouchdb": "~3.6.0",
+    "marked-element": "PolymerElements/marked-element#~1.0.2"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

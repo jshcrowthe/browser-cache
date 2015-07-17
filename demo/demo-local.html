@@ -18,7 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <link rel="import" href="../../marked-element/marked-element.html">
     <style>
       .code {
-
+        
         border: 2px solid #333;
         border-radius: 4px;
         padding:5px 20px;
@@ -28,13 +28,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
   </head>
   <body unresolved>
-    <h1>Available <code>&lt;browser-cache&gt;</code> demos:</h1>
-    <ul>
-      <li><a href="demo-standard.html">Standard Demo (bare minimum customization)</a></li>
-      <li><a href="demo-local.html">LocalStorage Demo</a></li>
-      <li><a href="demo-session.html">SessionStorage Demo</a></li>
-      <li><a href="demo-source.html">Demo using a source URL</a></li>
-    </ul>
+
+    <p>An example of <code>&lt;browser-cache&gt;</code> (Standard Interface):</p>
+
+    <template is="dom-bind" id="test">
+      <button on-click="set">Click to Populate Cache</button>
+      <p>After populating cache <a href="javascript:;" onclick="location.reload()">refresh</a> the browser and notice the data persists from page to page</p>
+      <browser-cache type="local" id="el" key='demo' data="{{data}}"></browser-cache>
+      <div class="code">
+        <marked-element markdown="{{formatOut(data)}}"></marked-element>
+      </div>
+    </template>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Faker/3.0.0/faker.min.js"></script>
+    <script>
+      document.getElementById('test').set = function(e) {
+        document.querySelector('browser-cache').setCache(faker.helpers.createCard());
+      };
+
+      document.getElementById('test').log = function(e) {
+        console.log(e.type + ':', e);
+      };
+
+      document.getElementById('test').formatOut = function(obj) {
+        return '```javascript\n' + JSON.stringify(obj, null, 2) + '```';
+      };
+    </script>
 
   </body>
 </html>
