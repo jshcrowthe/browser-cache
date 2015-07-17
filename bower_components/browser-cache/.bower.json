@@ -1,6 +1,5 @@
 {
   "name": "browser-cache",
-  "version": "1.0.0",
   "authors": [
     "Josh Crowther <jshcrowthe@gmail.com>"
   ],
@@ -27,11 +26,20 @@
     "polymer": "Polymer/polymer#^1.0.0",
     "iron-ajax": "PolymerElements/iron-ajax#~1.0.2",
     "pouchdb": "~3.6.0",
-    "marked-element": "PolymerElements/marked-element#~1.0.2",
-    "browser-cache": "jshcrowthe/browser-cache"
+    "marked-element": "PolymerElements/marked-element#~1.0.2"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "web-component-tester": "*"
-  }
+  },
+  "_release": "aa4a6356c0",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "aa4a6356c0cba8d0800e1772f0000b0709fc9baf"
+  },
+  "_source": "git://github.com/jshcrowthe/browser-cache.git",
+  "_target": "*",
+  "_originalSource": "jshcrowthe/browser-cache",
+  "_direct": true
 }
