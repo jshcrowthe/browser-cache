@@ -22,12 +22,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <body>
 
     <script>
-      sessionStorage.setItem('test', JSON.stringify({ hello: 'World' }));
+      localStorage.setItem('test', JSON.stringify({ hello: 'World' }));
     </script>
 
     <!-- You can use the document as a place to set up your fixtures. -->
     <template is="dom-bind" id="el">
-      <browser-cache id="cache" key="test" type="session" data="{{data}}"></browser-cache>
+      <browser-cache id="cache" key="test" type="local" data="{{data}}"></browser-cache>
     </template>
 
     <script>

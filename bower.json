@@ -19,7 +19,8 @@
   "homepage": "https://github.com/jshcrowthe/browser-cache/",
   "ignore": [
     "/.*",
-    "/test/"
+    "/test/",
+    "/package.json"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",

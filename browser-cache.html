@@ -35,7 +35,7 @@ Example:
 </dom-module>
 
 <script>
-  (function() {
+  (function(window) {
     var buildName = function(db, key) {
       var name = '';
       if (db) name += db + '.';
@@ -51,14 +51,14 @@ Example:
       if (!window.sessionStorage) return console.warn('<browser-cache>(SessionInterface): sessionStorage is not supported in the current browser');
       this._getCache = function() {
         try {
-          this._setData(JSON.parse(sessionStorage.getItem(buildName(this.database, this.key))));
+          this._setData(JSON.parse(sessionStorage.getItem(buildName(this.namespace, this.key))));
           this._setIsCachedData(true);
         } catch(e) {
           return console.error('ERROR: <browser-cache>(SessionInterface): There was an error retriving your data from sessionStorage', err);
         }
       };
       this._setCache = function(data) {
-        return (sessionStorage.setItem(buildName(this.database, this.key), JSON.stringify(data)));
+        return (sessionStorage.setItem(buildName(this.namespace, this.key), JSON.stringify(data)));
       };
     };
 
@@ -70,14 +70,14 @@ Example:
       if (!window.localStorage) return console.warn('<browser-cache>: localStorage is not supported in the current browser');
       this._getCache = function() {
         try {
-          this._setData(JSON.parse(localStorage.getItem(buildName(this.database, this.key))));
+          this._setData(JSON.parse(localStorage.getItem(buildName(this.namespace, this.key))));
           this._setIsCachedData(true);
         } catch(e) {
           return console.error('ERROR: <browser-cache>(LocalInterface): There was an error retriving your data from localStorage', err);
         }
       };
       this._setCache = function(data) {
-        return (sessionStorage.setItem(buildName(this.database, this.key), JSON.stringify(data)));
+        return (sessionStorage.setItem(buildName(this.namespace, this.key), JSON.stringify(data)));
       };
     };
 
@@ -87,11 +87,11 @@ Example:
     var PouchDBInterface = function() {
       if (!this._setData || !this._setIsCachedData) return console.warn('<browser-cache>: PouchDBInterface class called out of context');
       this._getCache = function() {
-        var db = new PouchDB(this.database || 'browser-cache');
+        var db = new PouchDB(this.namespace || 'browser-cache');
         if (!db || !db.get) return console.error('ERROR: <browser-cache>(PouchDBInterface): There was an error initializing PouchDB');
         var _this = this;
 
-        // Retrieve the Key from the database
+        // Retrieve the Key from the namespace
         db.get(this.key).then(function (doc) {
           _this._setData(doc.data);
           _this._setIsCachedData(true);
@@ -104,7 +104,7 @@ Example:
         });
       };
       this._setCache = function(data) {
-        var db = new PouchDB(this.database || 'browser-cache');
+        var db = new PouchDB(this.namespace || 'browser-cache');
         if (!db || !db.get) return console.error('ERROR: <browser-cache>(PouchDBInterface): There was an error initializing PouchDB');
         var _this = this;
         // Attempt to get an existing item by the specified key
@@ -158,11 +158,11 @@ Example:
       properties: {
         
         /**
-         * The `database` property defines the name of the database/namespace that will be used
+         * The `namespace` property defines the name of the namespace/namespace that will be used
          * for the data cache (Potentially allowing for more than one cache on the same machine).
          * @type {String}
          */
-        database: {
+        namespace: {
           type: String,
           value: null
         },
@@ -209,16 +209,15 @@ Example:
          * READ ONLY VALUES
          */
         
-        // /**
-        //  * Represents the loading state of the data
-        //  */
-        // loading: {
-        //   type: Boolean,
-        //   notify: true,
-        //   readOnly: true,
-        //   computed: '_computeLoading(data, _reqLoading)'
-        // },
-      
+        /**
+         * Represents the loading state of the data
+         */
+        loading: {
+          type: Boolean,
+          notify: true,
+          readOnly: true,
+          computed: '_computeLoading(data, _reqLoading)'
+        },
 
         /**
          * Will be set to the value of the cached data (if it exists)
@@ -251,12 +250,15 @@ Example:
           readOnly: true
         }
       },
-      ready: function() {
-        if (!this.key) return console.error('ERROR: <browser-cache>: Attribute "key" is required');
-        console.log('Type:', this.type);
-        // Here we call Function.call to grab the _setCache and _getCache method 
-        // from our storage interfaces above
+      observers: [
+        '_cacheTypeChanged(type)',
+        '_cacheOptionsChanged(namespace, key, source, requestHeaders)'
+      ],
+      _cacheTypeChanged: function() {
         InterfaceRouter(this.type).call(this);
+      },
+      _cacheOptionsChanged: function() {
+        if (!this.key) return console.error('ERROR: <browser-cache>: Attribute "key" is required');
         this._getCache(this.key);
       },
       _computeLoading: function(data, loading) {
@@ -274,10 +276,10 @@ Example:
         this.fire('source-response');
         if (!this.data) {
           this._setData(e.detail.response);
-          this.fire('new-data');
+          this.fire('cache-update');
         }
         if (!objectEquals(this.responseData, this.data)) {
-          this.fire('new-data');
+          this.fire('cache-update');
         }
       }
 
@@ -291,10 +293,10 @@ Example:
        */
 
       /**
-       * The `new-data` event is fired whenever there is a difference between the cached data and the response body (provided the `source` attribute exists).
+       * The `cache-update` event is fired whenever there is a difference between the cached data and the response body (provided the `source` attribute exists).
        *
-       * @event new-data
+       * @event cache-update
        */
     });
-  })();
+  })(window);
 </script>

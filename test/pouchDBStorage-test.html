@@ -21,13 +21,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </head>
   <body>
 
-    <script>
-      sessionStorage.setItem('test', JSON.stringify({ hello: 'World' }));
-    </script>
-
     <!-- You can use the document as a place to set up your fixtures. -->
     <template is="dom-bind" id="el">
-      <browser-cache id="cache" key="test" type="session" data="{{data}}"></browser-cache>
+      <browser-cache id="cache" key="test" data="{{data}}"></browser-cache>
     </template>
 
     <script>
@@ -39,12 +35,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           el = document.querySelector('browser-cache');
         });
         suite('Standard Tests', function() {
-          test('Retrieves Session Cache Data', function(done) {
-            flush(function() {
-              assert.equal(myEl.data.hello, 'World');
-              done();
-            });
-          });
           test('Updates Cache on `setCache`', function(done) {
             el.setCache({ hello: 'John Doe' });
             flush(function() {
