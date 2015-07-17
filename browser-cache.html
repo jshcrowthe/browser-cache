@@ -77,7 +77,7 @@ Example:
         }
       };
       this._setCache = function(data) {
-        return (sessionStorage.setItem(buildName(this.namespace, this.key), JSON.stringify(data)));
+        return (localStorage.setItem(buildName(this.namespace, this.key), JSON.stringify(data)));
       };
     };
 
