@@ -25,12 +25,13 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",
-    "iron-ajax": "PolymerElements/iron-ajax#~1.0.2",
-    "pouchdb": "~3.6.0",
-    "marked-element": "PolymerElements/marked-element#~1.0.2"
+    "promise-polyfill": "polymerlabs/promise-polyfill#^1.0.0",
+    "pouchdb": "~3.6.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "web-component-tester": "*"
+    "iron-ajax": "PolymerElements/iron-ajax#~1.0.2",
+    "web-component-tester": "*",
+    "marked-element": "PolymerElements/marked-element#~1.0.2"
   }
 }

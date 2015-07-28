@@ -1,5 +1,6 @@
 {
   "name": "browser-cache",
+  "version": "1.0.0",
   "authors": [
     "Josh Crowther <jshcrowthe@gmail.com>"
   ],
@@ -24,22 +25,23 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",
-    "iron-ajax": "PolymerElements/iron-ajax#~1.0.2",
-    "pouchdb": "~3.6.0",
-    "marked-element": "PolymerElements/marked-element#~1.0.2"
+    "promise-polyfill": "polymerlabs/promise-polyfill#^1.0.0",
+    "pouchdb": "~3.6.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "web-component-tester": "*"
+    "iron-ajax": "PolymerElements/iron-ajax#~1.0.2",
+    "web-component-tester": "*",
+    "marked-element": "PolymerElements/marked-element#~1.0.2"
   },
-  "_release": "aa4a6356c0",
+  "_release": "1.0.0",
   "_resolution": {
-    "type": "branch",
-    "branch": "master",
-    "commit": "aa4a6356c0cba8d0800e1772f0000b0709fc9baf"
+    "type": "version",
+    "tag": "1.0.0",
+    "commit": "8f5566f72fd08f2ab00480629465759cae1b3a67"
   },
   "_source": "git://github.com/jshcrowthe/browser-cache.git",
-  "_target": "*",
+  "_target": "~1.0.0",
   "_originalSource": "jshcrowthe/browser-cache",
   "_direct": true
 }

@@ -28,7 +28,7 @@
     "iron-ajax": "PolymerElements/iron-ajax#~1.0.2",
     "pouchdb": "~3.6.0",
     "marked-element": "PolymerElements/marked-element#~1.0.2",
-    "browser-cache": "jshcrowthe/browser-cache"
+    "browser-cache": "jshcrowthe/browser-cache#~1.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
