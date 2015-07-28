@@ -53,11 +53,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
           });
           test('Requests Data When Source Set', function(done) {
-            el.addEventListener('source-response', function() {
-              assert.equal(el.data.name, 'Bulbasaur');
+            flush(function() {
+              el.source = {
+                this: 'is',
+                some: 'data'
+              };
+              assert.equal(el.data.this, 'is');
+              assert.equal(el.data.some, 'data');
               done();
             });
-            el.source = 'http://pokeapi.co/api/v1/pokemon/1/';
           });
         });
       });
