@@ -285,9 +285,15 @@ Example:
       _computeLoading: function(data, loading) {
         return data ? false : loading;
       },
-      setCache: function(data) {
+      setCache: function(data, preventDataBinding) {
         if (!this.key) return console.error('ERROR: <browser-cache>: Attribute "key" is required');
         this._setCache(this.namespace, this.key, data);
+
+        // By default we set the value of the `data` property
+        // to be equal to whatever you set the value of the 
+        // cache to. However if you need to set very large
+        // pieces of data, this data binding can be problematic
+        if (preventDataBinding) return;
         this._setData(data);
       },
       _handleResponse: function(e) {
